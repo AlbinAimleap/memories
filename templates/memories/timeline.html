@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}Timeline - Ehron's Memory Album{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">
+                {% if child %}{{ child.name }}'s{% else %}Memory{% endif %} Timeline
+            </h1>
+            <p class="text-gray-600 mt-2">A chronological journey through precious moments</p>
+        </div>
+        
+        <div class="mt-4 md:mt-0 flex space-x-4">
+            {% if child %}
+                <a href="{% url 'memories:add' %}?child={{ child.id }}" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    <i class="fas fa-plus mr-2"></i>Add Memory
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Child Selector -->
+    {% if children.count > 1 %}
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex flex-wrap gap-2">
+                {% for child_option in children %}
+                    <a href="?child={{ child_option.id }}" 
+                       class="px-4 py-2 rounded-lg font-medium transition {% if child.id == child_option.id %}bg-purple-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                        {{ child_option.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    
+    {% if child %}
+        <!-- Child Info Card -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-bg p-6 text-white">
+                <div class="flex items-center space-x-4">
+                    {% if child.avatar %}
+                        <img src="{{ child.avatar.url }}" alt="{{ child.name }}" class="w-16 h-16 rounded-full border-4 border-white/50">
+                    {% else %}
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl">
+                            <i class="fas fa-baby"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h2 class="text-2xl font-bold">{{ child.name }}</h2>
+                        <p class="text-white/90">
+                            Born {{ child.birth_date|date:"F j, Y" }}
+                            {% if child.birth_location %} in {{ child.birth_location }}{% endif %}
+                        </p>
+                        <p class="text-white/90">
+                            {% if child.age_in_years == 0 %}
+                                {{ child.age_in_months }} months old ({{ child.age_in_days }} days)
+                            {% else %}
+                                {{ child.age_in_years }} years old
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Timeline -->
+        {% if memories %}
+            <div class="relative">
+                <!-- Timeline Line -->
+                <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-purple-400 to-purple-600"></div>
+                
+                <!-- Timeline Items -->
+                <div class="space-y-8">
+                    {% for memory in memories %}
+                        <div class="relative flex items-start">
+                            <!-- Timeline Dot -->
+                            <div class="absolute left-6 w-4 h-4 bg-purple-600 rounded-full border-4 border-white shadow-lg z-10"></div>
+                            
+                            <!-- Memory Card -->
+                            <div class="ml-20 flex-1">
+                                <div class="bg-white rounded-lg shadow-lg overflow-hidden memory-card">
+                                    <!-- Date Badge -->
+                                    <div class="bg-purple-100 px-4 py-2">
+                                        <span class="text-purple-800 font-medium">
+                                            {{ memory.memory_date|date:"F j, Y" }}
+                                            {% if memory.memory_date.time %}
+                                                at {{ memory.memory_date|time:"g:i A" }}
+                                            {% endif %}
+                                        </span>
+                                        {% if memory.is_milestone %}
+                                            <span class="ml-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs">
+                                                <i class="fas fa-star mr-1"></i>Milestone
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="p-6">
+                                        <!-- Media Content -->
+                                        {% if memory.image %}
+                                            <div class="mb-4">
+                                                <img src="{{ memory.image.url }}" alt="{{ memory.title }}" 
+                                                     class="w-full max-w-md mx-auto rounded-lg shadow-md">
+                                            </div>
+                                        {% elif memory.video %}
+                                            <div class="mb-4">
+                                                <video controls class="w-full max-w-md mx-auto rounded-lg shadow-md">
+                                                    <source src="{{ memory.video.url }}" type="video/mp4">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            </div>
+                                        {% elif memory.audio %}
+                                            <div class="mb-4">
+                                                <audio controls class="w-full max-w-md mx-auto">
+                                                    <source src="{{ memory.audio.url }}" type="audio/mpeg">
+                                                    Your browser does not support the audio element.
+                                                </audio>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Title and Content -->
+                                        <h3 class="text-xl font-bold text-gray-900 mb-3">{{ memory.title }}</h3>
+                                        
+                                        {% if memory.content %}
+                                            <p class="text-gray-700 mb-4">{{ memory.content|linebreaks }}</p>
+                                        {% endif %}
+                                        
+                                        <!-- AI Caption -->
+                                        {% if memory.ai_caption %}
+                                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                                <p class="text-blue-800 text-sm">
+                                                    <i class="fas fa-robot mr-1"></i>
+                                                    <strong>AI Caption:</strong> {{ memory.ai_caption }}
+                                                </p>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Tags and Location -->
+                                        <div class="flex flex-wrap items-center gap-4 mb-4">
+                                            {% if memory.tags %}
+                                                <div class="flex flex-wrap gap-1">
+                                                    {% for tag in memory.get_tags_list %}
+                                                        <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                                            #{{ tag }}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if memory.location %}
+                                                <span class="text-gray-600 text-sm">
+                                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ memory.location }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Reactions and Comments -->
+                                        <div class="border-t pt-4">
+                                            <!-- Reactions -->
+                                            <div class="flex items-center space-x-4 mb-3">
+                                                <div class="flex space-x-1">
+                                                    <button onclick="reactToMemory('{{ memory.pk }}', '❤️')" 
+                                                            class="text-2xl hover:scale-110 transition-transform">❤️</button>
+                                                    <button onclick="reactToMemory('{{ memory.pk }}', '😍')" 
+                                                            class="text-2xl hover:scale-110 transition-transform">😍</button>
+                                                    <button onclick="reactToMemory('{{ memory.pk }}', '🥰')" 
+                                                            class="text-2xl hover:scale-110 transition-transform">🥰</button>
+                                                    <button onclick="reactToMemory('{{ memory.pk }}', '👏')" 
+                                                            class="text-2xl hover:scale-110 transition-transform">👏</button>
+                                                </div>
+                                                
+                                                {% if memory.reactions.count %}
+                                                    <span class="text-gray-600 text-sm">
+                                                        {{ memory.reactions.count }} reaction{{ memory.reactions.count|pluralize }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Comments -->
+                                            {% if memory.comments.count %}
+                                                <div class="space-y-3">
+                                                    {% for comment in memory.comments.all|slice:":3" %}
+                                                        <div class="bg-gray-50 rounded-lg p-3">
+                                                            <div class="flex items-center space-x-2 mb-1">
+                                                                <span class="font-medium text-gray-900">{{ comment.user.first_name|default:comment.user.username }}</span>
+                                                                <span class="text-gray-500 text-xs">{{ comment.created_at|timesince }} ago</span>
+                                                            </div>
+                                                            <p class="text-gray-700 text-sm">{{ comment.content }}</p>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <!-- Add Comment -->
+                                            <div class="mt-3">
+                                                <form hx-post="{% url 'memories:comment' memory.pk %}" hx-target="#comments-{{ memory.pk }}" class="flex space-x-2">
+                                                    {% csrf_token %}
+                                                    <input type="text" name="content" placeholder="Add a comment..." 
+                                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                                                        Post
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Actions -->
+                                        <div class="flex justify-between items-center mt-4 pt-4 border-t">
+                                            <span class="text-gray-500 text-sm">
+                                                Added by {{ memory.created_by.first_name|default:memory.created_by.username }}
+                                            </span>
+                                            
+                                            <div class="flex space-x-2">
+                                                <a href="{% url 'memories:detail' memory.pk %}" 
+                                                   class="text-purple-600 hover:text-purple-700 font-medium text-sm">
+                                                    View Details
+                                                </a>
+                                                {% if user == memory.created_by or user.is_owner %}
+                                                    <a href="{% url 'memories:edit' memory.pk %}" 
+                                                       class="text-gray-600 hover:text-gray-700 font-medium text-sm">
+                                                        Edit
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-12">
+                <div class="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+                    <i class="fas fa-clock text-6xl text-purple-500 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">No Memories Yet</h2>
+                    <p class="text-gray-600 mb-6">Start {{ child.name }}'s timeline by adding the first memory!</p>
+                    <a href="{% url 'memories:add' %}?child={{ child.id }}" 
+                       class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                        Add First Memory
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- No Child Selected -->
+        <div class="text-center py-12">
+            <div class="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+                <i class="fas fa-baby text-6xl text-purple-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Select a Child</h2>
+                <p class="text-gray-600 mb-6">Choose a child to view their memory timeline.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function reactToMemory(memoryId, reaction) {
+        fetch(`/memories/${memoryId}/react/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `reaction=${reaction}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Reaction added:', data);
+            // You could update the UI here to show the new reaction count
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+{% endblock %}

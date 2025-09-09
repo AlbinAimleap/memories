@@ -1,0 +1,85 @@
+/* Custom styles for Ehron Memory Album */
+
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.memory-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.memory-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.feature-locked {
+    opacity: 0.6;
+    filter: grayscale(50%);
+}
+
+.timeline-dot {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Age-based color themes */
+.age-0 { --theme-color: #FF6B6B; }
+.age-1 { --theme-color: #4ECDC4; }
+.age-2 { --theme-color: #45B7D1; }
+.age-3 { --theme-color: #96CEB4; }
+.age-4 { --theme-color: #FFEAA7; }
+.age-5 { --theme-color: #DDA0DD; }
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .timeline-line {
+        left: 1rem;
+    }
+    
+    .timeline-content {
+        margin-left: 2.5rem;
+    }
+}
+
+/* Animation for new memories */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.new-memory {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

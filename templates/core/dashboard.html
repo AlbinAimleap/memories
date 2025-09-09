@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Ehron's Memory Album{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Welcome Header -->
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to {% if primary_child %}{{ primary_child.name }}'s{% else %}Your{% endif %} Memory Album
+        </h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+            Capture precious moments and watch them grow into beautiful memories that will last a lifetime.
+        </p>
+    </div>
+
+    {% if not children %}
+        <!-- No children setup -->
+        <div class="text-center py-12">
+            <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
+                <i class="fas fa-baby text-6xl text-purple-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Let's Get Started!</h2>
+                <p class="text-gray-600 mb-6">Create your first child's memory album to begin capturing those special moments.</p>
+                <a href="{% url 'accounts:register' %}" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    Create Memory Album
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <i class="fas fa-images text-3xl text-blue-500 mb-2"></i>
+                <h3 class="text-2xl font-bold text-gray-900">{{ stats.memories }}</h3>
+                <p class="text-gray-600">Memories</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <i class="fas fa-star text-3xl text-yellow-500 mb-2"></i>
+                <h3 class="text-2xl font-bold text-gray-900">{{ stats.milestones }}</h3>
+                <p class="text-gray-600">Milestones</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <i class="fas fa-folder text-3xl text-green-500 mb-2"></i>
+                <h3 class="text-2xl font-bold text-gray-900">{{ stats.albums }}</h3>
+                <p class="text-gray-600">Albums</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <i class="fas fa-book text-3xl text-purple-500 mb-2"></i>
+                <h3 class="text-2xl font-bold text-gray-900">{{ stats.stories }}</h3>
+                <p class="text-gray-600">Stories</p>
+            </div>
+        </div>
+
+        <!-- Children Overview -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for child in children %}
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="gradient-bg p-6 text-white text-center">
+                        {% if child.avatar %}
+                            <img src="{{ child.avatar.url }}" alt="{{ child.name }}" class="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white/50">
+                        {% else %}
+                            <div class="w-20 h-20 rounded-full mx-auto mb-4 bg-white/20 flex items-center justify-center text-2xl">
+                                <i class="fas fa-baby"></i>
+                            </div>
+                        {% endif %}
+                        <h3 class="text-2xl font-bold">{{ child.name }}</h3>
+                        <p class="text-white/90">
+                            {% if child.age_in_years == 0 %}
+                                {{ child.age_in_months }} months old
+                            {% else %}
+                                {{ child.age_in_years }} years old
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-900 mb-2">
+                                <i class="fas fa-unlock text-green-500 mr-1"></i>
+                                Unlocked Features
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for feature in child_features|get_item:child.id.unlocked_features %}
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                                        {{ feature|capfirst|replace:"_"," " }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        {% if child_features|get_item:child.id.upcoming_features %}
+                            <div class="mb-4">
+                                <h4 class="font-semibold text-gray-900 mb-2">
+                                    <i class="fas fa-clock text-yellow-500 mr-1"></i>
+                                    Coming Soon
+                                </h4>
+                                <div class="space-y-1">
+                                    {% for feature_name, unlock_age in child_features|get_item:child.id.upcoming_features %}
+                                        <div class="text-sm text-gray-600">
+                                            <span class="font-medium">{{ feature_name }}</span>
+                                            <span class="text-yellow-600">(Age {{ unlock_age }})</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="flex space-x-2">
+                            <a href="{% url 'memories:timeline' %}?child={{ child.id }}" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-center font-medium hover:bg-purple-700 transition">
+                                View Timeline
+                            </a>
+                            <a href="{% url 'memories:add' %}?child={{ child.id }}" class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-center font-medium hover:bg-gray-300 transition">
+                                Add Memory
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="{% url 'memories:add' %}" class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition group">
+                    <i class="fas fa-plus-circle text-3xl text-purple-600 mb-2 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium text-purple-900">Add Memory</span>
+                </a>
+                
+                <a href="{% url 'albums:create' %}" class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition group">
+                    <i class="fas fa-folder-plus text-3xl text-blue-600 mb-2 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium text-blue-900">Create Album</span>
+                </a>
+                
+                <a href="{% url 'milestones:add' %}" class="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition group">
+                    <i class="fas fa-star text-3xl text-yellow-600 mb-2 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium text-yellow-900">Add Milestone</span>
+                </a>
+                
+                {% if user.is_owner %}
+                    <a href="{% url 'accounts:invite' %}" class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition group">
+                        <i class="fas fa-user-plus text-3xl text-green-600 mb-2 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium text-green-900">Invite Family</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Memories -->
+        {% if recent_memories %}
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Recent Memories</h2>
+                    <a href="{% url 'memories:list' %}" class="text-purple-600 hover:text-purple-700 font-medium">
+                        View All <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {% for memory in recent_memories %}
+                        <div class="memory-card bg-gray-50 rounded-lg p-4">
+                            {% if memory.image %}
+                                <img src="{{ memory.image.url }}" alt="{{ memory.title }}" class="w-full h-32 object-cover rounded-lg mb-3">
+                            {% else %}
+                                <div class="w-full h-32 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg mb-3 flex items-center justify-center text-white text-2xl">
+                                    <i class="fas fa-{% if memory.memory_type == 'video' %}video{% elif memory.memory_type == 'audio' %}microphone{% else %}sticky-note{% endif %}"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <h4 class="font-medium text-gray-900 mb-2 truncate">{{ memory.title }}</h4>
+                            <p class="text-sm text-gray-600 mb-2">{{ memory.child.name }}</p>
+                            <p class="text-xs text-gray-500">{{ memory.memory_date|date:"M d, Y" }}</p>
+                            
+                            <a href="{% url 'memories:detail' memory.pk %}" class="block mt-3 text-center bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition">
+                                View Details
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<script>
+    // Custom filter for Django template (simulated in JavaScript)
+    // In production, you'd implement this as a custom template filter
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any dashboard-specific JavaScript here
+    });
+</script>
+{% endblock %}
